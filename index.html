@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>PulseStock</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0D1117;--surface:#141B24;--surface2:#1A2030;--border:#1E2530;
+  --text:#E5E9F0;--text2:#8A95A3;--text3:#4A5568;
+  --blue:#1A6BF5;--green:#22D3A5;--red:#F87171;--amber:#FBBF24;
+  --radius:12px;--radius-sm:8px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:10px;font-family:'DM Sans',sans-serif;gap:4px;transition:color .15s;}
+.bnav-item.active{color:var(--blue);}
+.bnav-icon{font-size:20px;line-height:1;}
+
+/* TOP BAR */
+.top-bar{position:fixed;top:0;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);z-index:99;padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.top-logo{font-size:18px;font-weight:700;color:var(--text);}
+.top-logo span{color:var(--blue);}
+.top-badge{font-size:10px;background:var(--surface2);color:var(--text2);padding:3px 8px;border-radius:20px;border:1px solid var(--border);}
+
+/* TICKER BAR */
+.ticker-bar{position:fixed;top:56px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);z-index:98;height:36px;overflow:hidden;display:flex;align-items:center;}
+.ticker-scroll{display:flex;gap:0;animation:tickerscroll 40s linear infinite;white-space:nowrap;align-items:center;}
+.ticker-item{display:flex;align-items:center;gap:8px;padding:0 16px;height:36px;border-right:1px solid var(--border);flex-shrink:0;cursor:pointer;}
+.ticker-sym{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;}
+.ticker-chg{font-size:11px;font-family:'DM Mono',monospace;font-weight:600;}
+.up{color:var(--green);}.down{color:var(--red);}
+@keyframes tickerscroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* MAIN CONTENT */
+.main{padding-top:100px;padding-bottom:80px;min-height:100vh;}
+.page{display:none;padding:16px;}
+.page.active{display:block;}
+
+/* HERO */
+.hero{text-align:center;padding:24px 0 20px;}
+.hero h1{font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1.2;margin-bottom:10px;}
+.hero h1 span{color:var(--blue);}
+.hero p{font-size:13px;color:var(--text2);margin-bottom:20px;}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:12px;}
+.search-wrap input{width:100%;background:var(--surface);border:1.5px solid var(--border);color:var(--text);border-radius:var(--radius);padding:14px 16px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+.search-wrap input:focus{border-color:var(--blue);}
+.btn-primary{width:100%;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s;}
+.btn-primary:active{opacity:.85;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;}
+.chip{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s;}
+.chip:active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* SEARCH DROPDOWN */
+.search-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);z-index:200;max-height:220px;overflow-y:auto;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.search-dropdown .dd-item{padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.search-dropdown .dd-item:last-child{border-bottom:none;}
+.search-dropdown .dd-item:active{background:var(--surface2);}
+.dd-sym{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;color:var(--text);min-width:60px;}
+.dd-name{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* RESULT CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.card-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+.price-big{font-size:32px;font-weight:700;font-family:'DM Mono',monospace;}
+.price-chg{font-size:16px;font-weight:600;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.stat-item{background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:3px;}
+.stat-value{font-size:14px;font-weight:600;font-family:'DM Mono',monospace;}
+
+/* AI ANALYSIS */
+.ai-card{background:linear-gradient(135deg,#0f1e3a 0%,var(--surface) 100%);border:1px solid #1a3a6a;border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.ai-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.ai-badge{background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.05em;}
+.ai-text{font-size:14px;line-height:1.7;color:var(--text);}
+.ai-loading{display:flex;align-items:center;gap:10px;color:var(--text2);font-size:13px;}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SIGNAL BADGES */
+.signal-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.signal{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+.signal-buy{background:rgba(34,211,165,.15);color:var(--green);border:1px solid rgba(34,211,165,.3);}
+.signal-sell{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3);}
+.signal-hold{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid rgba(251,191,36,.3);}
+
+/* CHART PLACEHOLDER */
+.chart-wrap{background:var(--surface2);border-radius:var(--radius-sm);height:240px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;margin-bottom:12px;overflow:hidden;}
+.chart-wrap iframe{width:100%;height:100%;border:none;}
+
+/* SCREENER */
+.filter-group{margin-bottom:14px;}
+.filter-group label{font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:6px;}
+.filter-group select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;}
+
+/* PORTFOLIO */
+.holding-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.holding-sym{font-size:16px;font-weight:700;font-family:'DM Mono',monospace;}
+.holding-shares{font-size:12px;color:var(--text2);}
+.holding-value{text-align:right;}
+.holding-price{font-size:15px;font-weight:600;font-family:'DM Mono',monospace;}
+.holding-gain{font-size:12px;font-weight:600;}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:48px 24px;color:var(--text2);}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty p{font-size:14px;}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-size:18px;font-weight:700;}
+.section-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-logo">Pulse<span>Stock</span></div>
+  <div class="top-badge">AI · Live</div>
+</div>
+
+<!-- TICKER BAR -->
+<div class="ticker-bar">
+  <div id="m-ticker-scroll" class="ticker-scroll">
+    <span style="padding:0 16px;font-size:12px;color:var(--text2);">Loading…</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ANALYZE PAGE -->
+  <div class="page active" id="page-analyze">
+    <div class="hero">
+      <h1>Institutional-grade<br/><span>stock analysis</span></h1>
+      <p>Real-time quotes & AI-driven insights</p>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="m-ticker-input" placeholder="Search ticker or company…"
+        oninput="mOnInput(this.value)"
+        onkeydown="mOnKeydown(event)"
+        autocomplete="off" autocapitalize="characters"/>
+      <div id="m-search-dropdown" class="search-dropdown" style="display:none;"></div>
+    </div>
+    <button class="btn-primary" onclick="mDoAnalyze()">Analyze</button>
+    <div class="chips" id="m-chips">
+      <button class="chip" onclick="mQS('AAPL')">AAPL</button>
+      <button class="chip" onclick="mQS('NVDA')">NVDA</button>
+      <button class="chip" onclick="mQS('MSFT')">MSFT</button>
+      <button class="chip" onclick="mQS('TSLA')">TSLA</button>
+      <button class="chip" onclick="mQS('AMZN')">AMZN</button>
+      <button class="chip" onclick="mQS('GOOGL')">GOOGL</button>
+      <button class="chip" onclick="mQS('META')">META</button>
+      <button class="chip" onclick="mQS('JPM')">JPM</button>
+    </div>
+    <div id="m-result" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- SCREENER PAGE -->
+  <div class="page" id="page-screener">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Screener</div>
+        <div class="section-sub">Filter stocks by fundamentals</div>
+      </div>
+    </div>
+    <div class="filter-group"><label>Sector</label>
+      <select id="m-f-sec"><option value="">All sectors</option><option>Technology</option><option>Healthcare</option><option>Finance</option><option>Consumer</option><option>Energy</option></select>
+    </div>
+    <div class="filter-group"><label>Market Cap</label>
+      <select id="m-f-cap"><option value="">Any size</option><option value="mega">Mega-cap (&gt;$200B)</option><option value="large">Large-cap</option></select>
+    </div>
+    <div class="filter-group"><label>P/E Range</label>
+      <select id="m-f-pe"><option value="">Any P/E</option><option value="low">Undervalued (&lt;15x)</option><option value="fair">Fair (15–25x)</option><option value="growth">Growth (25–50x)</option><option value="high">High (&gt;50x)</option></select>
+    </div>
+    <div class="filter-group"><label>Dividend</label>
+      <select id="m-f-div"><option value="">Any yield</option><option value="none">No dividend</option><option value="low">Low (&lt;2%)</option><option value="med">Medium (2–4%)</option><option value="high">High (&gt;4%)</option></select>
+    </div>
+    <button class="btn-primary" onclick="mRunScreen()" style="margin-top:4px;">Screen Stocks</button>
+    <div id="m-screen-result" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- WATCHLIST PAGE -->
+  <div class="page" id="page-watchlist">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Watchlist</div>
+        <div class="section-sub">Your saved tickers</div>
+      </div>
+      <button onclick="mAddWatch()" style="background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;">+ Add</button>
+    </div>
+    <div id="m-watchlist-content"></div>
+  </div>
+
+  <!-- PORTFOLIO PAGE -->
+  <div class="page" id="page-portfolio">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Portfolio</div>
+        <div class="section-sub">Track your holdings</div>
+      </div>
+      <button onclick="mAddHolding()" style="background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;">+ Add</button>
+    </div>
+    <div id="m-portfolio-content">
+      <div class="empty"><div class="empty-icon">📊</div><p>No holdings yet.<br/>Tap + Add to get started.</p></div>
+    </div>
+  </div>
+
+  <!-- MORE PAGE -->
+  <div class="page" id="page-more">
+    <div class="section-header"><div><div class="section-title">More</div></div></div>
+    <div class="card" style="margin-bottom:10px;">
+      <a href="https://pulsestock-nu.vercel.app" target="_blank" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--text);">
+        <span style="font-size:14px;font-weight:500;">🖥️ Full Desktop Site</span>
+        <span style="color:var(--text2);">→</span>
+      </a>
+    </div>
+    <div class="card" style="margin-bottom:10px;">
+      <a href="https://pulsestock-nu.vercel.app/briefing.html" target="_blank" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--text);">
+        <span style="font-size:14px;font-weight:500;">📰 Daily Briefing</span>
+        <span style="color:var(--text2);">→</span>
+      </a>
+    </div>
+    <div class="card" style="margin-bottom:10px;">
+      <a href="https://pulsestock-nu.vercel.app/morning-picks.html" target="_blank" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--text);">
+        <span style="font-size:14px;font-weight:500;">☀️ Morning Picks</span>
+        <span style="color:var(--text2);">→</span>
+      </a>
+    </div>
+    <div class="card">
+      <a href="https://pulsestock-nu.vercel.app/community.html" target="_blank" style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--text);">
+        <span style="font-size:14px;font-weight:500;">💬 Community</span>
+        <span style="color:var(--text2);">→</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" id="bnav-analyze" onclick="mShowPage('analyze',this)">
+    <span class="bnav-icon">🔍</span><span>Analyze</span>
+  </button>
+  <button class="bnav-item" id="bnav-screener" onclick="mShowPage('screener',this)">
+    <span class="bnav-icon">📋</span><span>Screener</span>
+  </button>
+  <button class="bnav-item" id="bnav-watchlist" onclick="mShowPage('watchlist',this)">
+    <span class="bnav-icon">⭐</span><span>Watchlist</span>
+  </button>
+  <button class="bnav-item" id="bnav-portfolio" onclick="mShowPage('portfolio',this)">
+    <span class="bnav-icon">💼</span><span>Portfolio</span>
+  </button>
+  <button class="bnav-item" id="bnav-more" onclick="mShowPage('more',this)">
+    <span class="bnav-icon">☰</span><span>More</span>
+  </button>
+</nav>
+
+<script>
+const API = 'https://pulsestock-nu.vercel.app/api';
+let mCurrentTicker = '';
+let mWatchlist = JSON.parse(localStorage.getItem('ps_watch') || '[]');
+let mPortfolio = JSON.parse(localStorage.getItem('ps_port') || '[]');
+let mSearchTimer = null;
+
+// PAGE NAV
+function mShowPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'watchlist') mRenderWatchlist();
+  if (id === 'portfolio') mRenderPortfolio();
+}
+
+// TICKER BAR
+async function mLoadTicker() {
+  const syms = ['SPY','QQQ','AAPL','NVDA','MSFT','TSLA','AMZN','META','GOOGL','JPM'];
+  try {
+    const results = await Promise.all(syms.map(s =>
+      fetch(`${API}/company?symbol=${s}`).then(r=>r.json()).catch(()=>null)
+    ));
+    const items = results.filter(Boolean).map(d => {
+      const chg = d.dp || 0;
+      const cls = chg >= 0 ? 'up' : 'down';
+      const sign = chg >= 0 ? '+' : '';
+      return `<span class="ticker-item" onclick="mQS('${d.symbol||''}')">
+        <span class="ticker-sym">${d.symbol||''}</span>
+        <span class="ticker-chg ${cls}">${sign}${chg.toFixed(2)}%</span>
+      </span>`;
+    });
+    const html = items.join('') + items.join('');
+    document.getElementById('m-ticker-scroll').innerHTML = html;
+  } catch(e) {}
+}
+
+// SEARCH
+async function mOnInput(val) {
+  clearTimeout(mSearchTimer);
+  const dd = document.getElementById('m-search-dropdown');
+  if (!val || val.length < 1) { dd.style.display = 'none'; return; }
+  mSearchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API}/company?q=${encodeURIComponent(val)}`);
+      const d = await r.json();
+      const results = d.result || [];
+      if (!results.length) { dd.style.display = 'none'; return; }
+      dd.innerHTML = results.slice(0,6).map(item =>
+        `<div class="dd-item" onclick="mQS('${item.symbol}')">
+          <span class="dd-sym">${item.symbol}</span>
+          <span class="dd-name">${item.description||''}</span>
+        </div>`
+      ).join('');
+      dd.style.display = 'block';
+    } catch(e) { dd.style.display = 'none'; }
+  }, 300);
+}
+
+function mOnKeydown(e) {
+  if (e.key === 'Enter') mDoAnalyze();
+}
+
+function mQS(sym) {
+  document.getElementById('m-ticker-input').value = sym;
+  document.getElementById('m-search-dropdown').style.display = 'none';
+  mDoAnalyze(sym);
+}
+
+// ANALYZE
+async function mDoAnalyze(sym) {
+  const ticker = (sym || document.getElementById('m-ticker-input').value).trim().toUpperCase();
+  if (!ticker) return;
+  mCurrentTicker = ticker;
+  document.getElementById('m-search-dropdown').style.display = 'none';
+
+  const result = document.getElementById('m-result');
+  result.innerHTML = `<div class="card"><div class="ai-loading"><div class="spinner"></div>Loading ${ticker}…</div></div>`;
+
+  try {
+    const [quoteRes, aiRes] = await Promise.all([
+      fetch(`${API}/company?symbol=${ticker}`).then(r=>r.json()),
+      fetch(`${API}/analyze`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ticker, tier:'free'})
+      }).then(r=>r.json())
+    ]);
+
+    const price = quoteRes.c || 0;
+    const chg = quoteRes.d || 0;
+    const pct = quoteRes.dp || 0;
+    const isUp = chg >= 0;
+    const chgCls = isUp ? 'up' : 'down';
+    const sign = isUp ? '+' : '';
+
+    // Determine signal from AI text
+    const aiText = aiRes.analysis || aiRes.result || aiRes.content || 'Analysis unavailable.';
+    const upper = aiText.toUpperCase();
+    let signal = '';
+    if (upper.includes('BUY') || upper.includes('BULLISH')) signal = '<span class="signal signal-buy">BUY Signal</span>';
+    else if (upper.includes('SELL') || upper.includes('BEARISH')) signal = '<span class="signal signal-sell">SELL Signal</span>';
+    else signal = '<span class="signal signal-hold">HOLD / Neutral</span>';
+
+    result.innerHTML = `
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:22px;font-weight:800;font-family:'DM Mono',monospace;">${ticker}</span>
+          <button onclick="mToggleWatch('${ticker}')" id="watch-btn-${ticker}" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;">${mWatchlist.includes(ticker)?'★ Watching':'☆ Watch'}</button>
+        </div>
+        <div class="price-row">
+          <span class="price-big">$${price.toFixed(2)}</span>
+          <span class="price-chg ${chgCls}">${sign}$${Math.abs(chg).toFixed(2)} (${sign}${pct.toFixed(2)}%)</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-item"><div class="stat-label">Open</div><div class="stat-value">$${(quoteRes.o||0).toFixed(2)}</div></div>
+          <div class="stat-item"><div class="stat-label">Prev Close</div><div class="stat-value">$${(quoteRes.pc||0).toFixed(2)}</div></div>
+          <div class="stat-item"><div class="stat-label">High</div><div class="stat-value up">$${(quoteRes.h||0).toFixed(2)}</div></div>
+          <div class="stat-item"><div class="stat-label">Low</div><div class="stat-value down">$${(quoteRes.l||0).toFixed(2)}</div></div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tv&symbol=${ticker}&interval=D&theme=dark&style=1&locale=en&toolbar_bg=%230D1117&enable_publishing=false&hide_top_toolbar=false&hide_legend=false&save_image=false&hide_volume=false" allowtransparency="true" allowfullscreen="false"></iframe>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-header">
+          <span class="ai-badge">PulseAI</span>
+          <span style="font-size:13px;font-weight:600;">${ticker} Analysis</span>
+        </div>
+        <div class="ai-text">${aiText.replace(/\n/g,'<br/>')}</div>
+        <div class="signal-row">${signal}</div>
+      </div>`;
+  } catch(e) {
+    result.innerHTML = `<div class="card" style="color:var(--red);">Error loading ${ticker}. Please try again.</div>`;
+  }
+}
+
+// WATCHLIST
+function mToggleWatch(sym) {
+  const idx = mWatchlist.indexOf(sym);
+  if (idx > -1) mWatchlist.splice(idx, 1);
+  else mWatchlist.push(sym);
+  localStorage.setItem('ps_watch', JSON.stringify(mWatchlist));
+  const btn = document.getElementById('watch-btn-' + sym);
+  if (btn) btn.textContent = mWatchlist.includes(sym) ? '★ Watching' : '☆ Watch';
+}
+
+function mAddWatch() {
+  const sym = prompt('Enter ticker symbol:');
+  if (sym) { mWatchlist.push(sym.toUpperCase()); localStorage.setItem('ps_watch', JSON.stringify(mWatchlist)); mRenderWatchlist(); }
+}
+
+function mRenderWatchlist() {
+  const el = document.getElementById('m-watchlist-content');
+  if (!mWatchlist.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">⭐</div><p>No tickers yet.<br/>Tap + Add to watch a stock.</p></div>';
+    return;
+  }
+  el.innerHTML = mWatchlist.map(sym => `
+    <div class="holding-card" onclick="mQS('${sym}');mShowPage('analyze',document.getElementById('bnav-analyze'))">
+      <div><div class="holding-sym">${sym}</div><div class="holding-shares">Tap to analyze</div></div>
+      <button onclick="event.stopPropagation();mRemoveWatch('${sym}')" style="background:none;border:none;color:var(--text2);font-size:18px;cursor:pointer;">✕</button>
+    </div>`).join('');
+}
+
+function mRemoveWatch(sym) {
+  mWatchlist = mWatchlist.filter(s => s !== sym);
+  localStorage.setItem('ps_watch', JSON.stringify(mWatchlist));
+  mRenderWatchlist();
+}
+
+// PORTFOLIO
+function mAddHolding() {
+  const sym = prompt('Ticker symbol:');
+  if (!sym) return;
+  const shares = parseFloat(prompt('Number of shares:'));
+  const cost = parseFloat(prompt('Cost per share ($):'));
+  if (isNaN(shares) || isNaN(cost)) return;
+  mPortfolio.push({sym: sym.toUpperCase(), shares, cost});
+  localStorage.setItem('ps_port', JSON.stringify(mPortfolio));
+  mRenderPortfolio();
+}
+
+function mRenderPortfolio() {
+  const el = document.getElementById('m-portfolio-content');
+  if (!mPortfolio.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><p>No holdings yet.<br/>Tap + Add to get started.</p></div>';
+    return;
+  }
+  el.innerHTML = mPortfolio.map((h,i) => `
+    <div class="holding-card">
+      <div>
+        <div class="holding-sym">${h.sym}</div>
+        <div class="holding-shares">${h.shares} shares @ $${h.cost.toFixed(2)}</div>
+      </div>
+      <div class="holding-value">
+        <div class="holding-price">$${(h.shares * h.cost).toFixed(2)}</div>
+        <button onclick="mRemoveHolding(${i})" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;margin-top:4px;">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+function mRemoveHolding(i) {
+  mPortfolio.splice(i, 1);
+  localStorage.setItem('ps_port', JSON.stringify(mPortfolio));
+  mRenderPortfolio();
+}
+
+// SCREENER
+async function mRunScreen() {
+  const el = document.getElementById('m-screen-result');
+  el.innerHTML = '<div class="card"><div class="ai-loading"><div class="spinner"></div>Screening stocks…</div></div>';
+  const sec = document.getElementById('m-f-sec').value;
+  const cap = document.getElementById('m-f-cap').value;
+  const pe = document.getElementById('m-f-pe').value;
+  const div = document.getElementById('m-f-div').value;
+  try {
+    const r = await fetch(`${API}/analyze`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({screen:true, sector:sec, cap, pe, div, tier:'free'})
+    });
+    const d = await r.json();
+    el.innerHTML = `<div class="ai-card"><div class="ai-header"><span class="ai-badge">Results</span></div><div class="ai-text">${(d.analysis||d.result||'No results.').replace(/\n/g,'<br/>')}</div></div>`;
+  } catch(e) {
+    el.innerHTML = '<div class="card" style="color:var(--red);">Screener error. Try again.</div>';
+  }
+}
+
+// INIT
+mLoadTicker();
+</script>
+</body>
+</html>
