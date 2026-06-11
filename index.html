@@ -582,6 +582,15 @@ body { padding-bottom: 64px; }
 </header>
 
 <main class="main">
+<!-- MOBILE STICKY TICKER HEADER -->
+<div class="m-ticker-header" id="m-ticker-header">
+  <button class="m-back-btn" onclick="mBackToHome()" title="Back">‹</button>
+  <div style="flex:1;">
+    <span class="m-ticker-sym" id="m-sticky-sym"></span>
+    <span class="m-ticker-chg" id="m-sticky-chg" style="margin-left:8px;"></span>
+  </div>
+  <span class="m-ticker-price" id="m-sticky-price"></span>
+</div>
   <!-- ANALYZE -->
   <div class="page active" id="page-analyze">
     <div class="hero">
@@ -1415,7 +1424,11 @@ async function doAnalyze(){
   const above50=f.ma50?quote.price>parseFloat(f.ma50):true;
   const above200=f.ma200?quote.price>parseFloat(f.ma200):true;
 
-  el.innerHTML=`<div class="fade-in">
+  // Show mobile sticky header with live price
+if(window.innerWidth <= 768) {
+  mShowAnalysisHeader(ticker, quote.price.toFixed(2), quote.change, quote.pct.toFixed(2));
+}
+el.innerHTML=`<div class="fade-in">
   <!-- QUICK NAV - auto-balanced two rows by measured pixel width -->
   <div class="quick-nav-wrap"><div class="quick-nav" id="quick-nav-${ticker}">
     <div id="qn-row1-${ticker}" style="display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding:8px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
@@ -4730,6 +4743,38 @@ function mobileSwitchTab(page, el) {
   el.classList.add('active');
   // Push history state for back button
   history.pushState({page: page}, '', '?p=' + page);
+}
+// Hide hero and show sticky ticker header after analysis
+function mShowAnalysisHeader(ticker, price, chg, pct) {
+  // Hide hero
+  const hero = document.querySelector('.hero');
+  if (hero) hero.classList.add('m-hidden');
+  // Show sticky header
+  const header = document.getElementById('m-ticker-header');
+  const sym = document.getElementById('m-sticky-sym');
+  const priceEl = document.getElementById('m-sticky-price');
+  const chgEl = document.getElementById('m-sticky-chg');
+  if (header) header.classList.add('visible');
+  if (sym) sym.textContent = ticker;
+  if (priceEl) priceEl.textContent = '$' + price;
+  const isUp = parseFloat(chg) >= 0;
+  if (chgEl) {
+    chgEl.textContent = (isUp ? '+' : '') + pct + '%';
+    chgEl.style.color = isUp ? 'var(--green)' : 'var(--red)';
+  }
+}
+function mBackToHome() {
+  // Show hero again
+  const hero = document.querySelector('.hero');
+  if (hero) hero.classList.remove('m-hidden');
+  // Hide sticky header
+  const header = document.getElementById('m-ticker-header');
+  if (header) header.classList.remove('visible');
+  // Clear results
+  const result = document.getElementById('analyze-result');
+  if (result) result.innerHTML = '';
+  // Scroll to top
+  window.scrollTo({top: 0, behavior: 'smooth'});
 }
 // Handle browser back button
 window.addEventListener('popstate', function(e) {
