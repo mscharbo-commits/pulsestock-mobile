@@ -421,6 +421,58 @@ footer{border-top:1px solid var(--border);margin-top:60px;padding:24px;text-alig
 .ticker-loading{font-size:13px;color:#8A95A3;padding:0 20px;}
 @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
+
+/* ===== MOBILE FIXES ===== */
+@media(max-width:768px){
+  /* Smaller header */
+  .header-inner{padding:0 12px;height:44px;}
+  .logo-icon{width:28px;height:28px;font-size:13px;}
+  .logo-name{font-size:15px;}
+  header{min-height:44px;}
+
+  /* Hide sign in + badge on mobile */
+  .header-nav{display:none !important;}
+  .header-badge{display:none !important;}
+  a[href*="signin"],button[onclick*="signin"],.sign-in-btn{display:none !important;}
+
+  /* Hide ? help bubble */
+  #support-bubble,#help-bubble,.support-bubble,.help-bubble,
+  [id*="bubble"],[class*="bubble"]{display:none !important;}
+
+  /* Quick nav - single scroll row */
+  .quick-nav{padding:0 !important;}
+  .quick-nav > div:first-child{display:none !important;}
+  #qn-row1-AAPL,#qn-row1-NVDA,[id^="qn-row1-"]{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    gap:6px !important;
+    padding:8px 12px !important;
+  }
+  [id^="qn-row1-"]::-webkit-scrollbar{display:none;}
+  [id^="qn-row2-"]{display:none !important;}
+
+  /* Chips - single scroll row */
+  .quick-picks{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    gap:8px !important;
+    padding-bottom:4px;
+    justify-content:flex-start !important;
+  }
+  .quick-picks::-webkit-scrollbar{display:none;}
+
+  /* Ticker bar below smaller header */
+  .ticker-bar{top:44px;}
+  .main{padding-top:88px;}
+}
+/* ===== END MOBILE FIXES ===== */
+
 /* ===== MOBILE APP STYLES ===== */
 body { padding-bottom: 64px; }
 
