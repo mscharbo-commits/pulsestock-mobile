@@ -1374,6 +1374,13 @@ async function fetchAnalyst(ticker){
 }
 
 async function doAnalyze(){
+  // Hide hero on mobile as soon as analysis starts
+  if(window.innerWidth <= 768){
+    var hero = document.querySelector('.hero');
+    if(hero) hero.style.display = 'none';
+    var mh = document.getElementById('m-ticker-header');
+    if(mh) mh.classList.add('visible');
+  }
   var rawInput=document.getElementById('ticker-input').value.trim();
   // If user typed a full name, try to extract just the ticker symbol
   const ticker=rawInput.toUpperCase().split(' ')[0].replace(/[^A-Z0-9.\-]/g,'');
