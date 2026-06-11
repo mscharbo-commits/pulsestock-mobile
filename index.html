@@ -1366,9 +1366,8 @@ async function doAnalyze(){
   el.innerHTML=`<div class="fade-in">
   <!-- QUICK NAV - auto-balanced two rows by measured pixel width -->
   <div class="quick-nav-wrap"><div class="quick-nav" id="quick-nav-${ticker}">
-    <div style="font-size:11px;font-weight:600;color:var(--text3);text-align:center;letter-spacing:.04em;margin-bottom:7px;">Jump to</div>
-    <div id="qn-row1-${ticker}" style="display:flex;justify-content:center;gap:6px;"></div>
-    <div id="qn-row2-${ticker}" style="display:flex;justify-content:center;gap:6px;margin-top:6px;"></div>
+    <div id="qn-row1-${ticker}" style="display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:6px;padding:8px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+    <div id="qn-row2-${ticker}" style="display:none;"></div>
   </div>
   <div id="qn-stage-${ticker}" style="position:absolute;visibility:hidden;pointer-events:none;display:flex;gap:6px;top:0;left:0;"></div>
   <div class="card">
