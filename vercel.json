@@ -1,0 +1,47 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron-regsho",
+      "schedule": "0 10 * * 1-5"
+    },
+    {
+      "path": "/api/cron-picks",
+      "schedule": "30 13 * * 1-5"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/signin",
+      "dest": "/signin.html"
+    },
+    {
+      "src": "/desktop",
+      "dest": "/desktop.html"
+    },
+    {
+      "src": "/morning-picks",
+      "dest": "/morning-picks.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*).html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
