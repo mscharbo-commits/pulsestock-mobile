@@ -1774,11 +1774,10 @@ async function doAnalyze(){
         if(diff < best.diff) best = {split:i, diff:diff};
       }
       var r1 = document.getElementById('qn-row1-'+t);
-      var r2 = document.getElementById('qn-row2-'+t);
-      if(!r1||!r2) return;
-      btns.forEach(function(b,i){
-        if(i < best.split) r1.appendChild(makeBtn(b));
-        else r2.appendChild(makeBtn(b));
+      if(!r1) return;
+      // Mobile: put ALL buttons in single scrollable row
+      btns.forEach(function(b){
+        r1.appendChild(makeBtn(b));
       });
       stage.remove();
     });
