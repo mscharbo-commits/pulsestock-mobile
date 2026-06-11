@@ -801,7 +801,7 @@ function onTickerInput(val){
 async function searchTickers(query){
   var dd=document.getElementById('search-dropdown');
   try{
-    var r=await fetch('/api/search?q='+encodeURIComponent(query));
+    var r=await fetch('https://pulsestock-nu.vercel.app/api/search?q='+encodeURIComponent(query));
     var quotes=await r.json();
     searchResults=quotes;
     if(!quotes.length){dd.innerHTML='<div class="search-loading">No results — try typing the ticker symbol directly</div>';return;}
@@ -1037,7 +1037,7 @@ async function fetchTrades(ticker,type){
 
 async function fetchEdgar(ticker){
   try{
-    var r = await fetch('/api/edgar?ticker=' + encodeURIComponent(ticker));
+    var r = await fetch('https://pulsestock-nu.vercel.app/api/edgar?ticker=' + encodeURIComponent(ticker));
     if(!r.ok) return null;
     return await r.json();
   }catch(e){ return null; }
@@ -1045,7 +1045,7 @@ async function fetchEdgar(ticker){
 
 async function fetchNews(ticker, days){
   try{
-    var r = await fetch('/api/news?ticker=' + encodeURIComponent(ticker) + '&days=' + (days||30));
+    var r = await fetch('https://pulsestock-nu.vercel.app/api/news?ticker=' + encodeURIComponent(ticker) + '&days=' + (days||30));
     if(!r.ok) return [];
     return await r.json();
   }catch(e){ return []; }
@@ -1275,7 +1275,7 @@ function renderNews(ticker, articles){
 
 async function fetchAnalyst(ticker){
   try{
-    const r = await fetch('/api/analyst?ticker='+encodeURIComponent(ticker));
+    const r = await fetch('https://pulsestock-nu.vercel.app/api/analyst?ticker='+encodeURIComponent(ticker));
     if(!r.ok) return null;
     return await r.json();
   }catch(e){ return null; }
@@ -1915,7 +1915,7 @@ async function runAIAnalysis(ticker, name, sector){
     + '<div class="ai-streaming" id="ai-stream-body"><span style="color:var(--text3);">Generating institutional-grade analysis</span><span class="ai-cursor"></span></div></div>';
 
   try {
-    const resp = await fetch('/api/analyze-cached', {
+    const resp = await fetch('https://pulsestock-nu.vercel.app/api/analyze-cached', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ticker, tier: 'free', messages: [{ role: 'user', content: prompt }] })
@@ -3417,7 +3417,7 @@ async function refreshRegSHOCache() {
     if(!allTickers.length) return; // no data yet, don't overwrite
 
     // Save to Gist via Vercel endpoint
-    const saveRes = await fetch('/api/ftd-save', {
+    const saveRes = await fetch('https://pulsestock-nu.vercel.app/api/ftd-save', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ date, tickers: allTickers, counts: { finra: finraTickers.length, nasdaq: nasdaqTickers.length, total: allTickers.length } })
@@ -4333,7 +4333,7 @@ async function runPortfolioAI() {
   output.innerHTML = '<div class="ai-analysis-card" style="margin-top:16px;"><div class="ai-analysis-header"><h3>🧠 AI Portfolio Analysis</h3><span style="font-size:12px;color:var(--text3);">Powered by Claude</span></div><div class="ai-streaming" id="port-ai-stream"><span style="color:var(--text3);">Analyzing your portfolio...</span><span class="ai-cursor"></span></div></div>';
 
   try {
-    const resp = await fetch('/api/analyze', {
+    const resp = await fetch('https://pulsestock-nu.vercel.app/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] })
@@ -4447,7 +4447,7 @@ async function chatAsk(ticker, question) {
   msgsEl.scrollTop = msgsEl.scrollHeight;
   document.querySelectorAll('#chat-chips-' + ticker + ' .chat-chip').forEach(function(c){ c.disabled = true; });
   try {
-    var resp = await fetch('/api/chat', {
+    var resp = await fetch('https://pulsestock-nu.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ticker: ticker, question: question })
@@ -4595,7 +4595,7 @@ async function spSend() {
   var thinking = spAdd('Thinking...', 'spm-ai');
   thinking.style.color = '#8A95A3';
   try {
-    var r = await fetch('/api/support', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:msg, history:spHist.slice(-6)})});
+    var r = await fetch('https://pulsestock-nu.vercel.app/api/support', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:msg, history:spHist.slice(-6)})});
     var d = await r.json();
     var ans = d.text || 'Sorry, I could not get an answer right now.';
     thinking.innerHTML = ans.replace(/\n/g,'<br>');
@@ -4614,7 +4614,7 @@ async function spTicket() {
   if (!email) { alert('Please enter your email.'); return; }
   var lastMsg = spHist.filter(function(h){return h.role==='user';}).pop();
   try {
-    await fetch('/api/support-ticket', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:name, email:email, message: lastMsg ? lastMsg.content : '', conversation:spHist})});
+    await fetch('https://pulsestock-nu.vercel.app/api/support-ticket', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:name, email:email, message: lastMsg ? lastMsg.content : '', conversation:spHist})});
     document.getElementById('spesc').innerHTML = '<p style="color:#0D9B6B;font-size:13px;text-align:center;">Ticket submitted! We will reply to ' + email + ' within 24 hours.</p>';
     spAdd('Your support ticket has been submitted. We will get back to you at ' + email + ' soon.', 'spm-sys');
   } catch(e) { alert('Error: ' + e.message); }
